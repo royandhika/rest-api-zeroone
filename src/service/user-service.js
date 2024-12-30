@@ -1,5 +1,5 @@
 import { loginUserValidation, registerUserValidation } from "../middleware/user-validation.js"
-import { refreshAccessToken, getToken, validate } from "../middleware/validation.js"
+import { validate, signToken, verifyToken } from "../middleware/validation.js"
 import { prismaClient } from "../application/database.js"
 import { ResponseError } from "../error/response-error.js";
 import bcrypt from "bcrypt";
@@ -62,7 +62,9 @@ const login = async (request) => {
         throw new ResponseError(401, "Username or password wrong")
     };
     
-    const [refreshToken, accessToken] = await getToken(userExist);
+    // const [refreshToken, accessToken] = await getToken(userExist);
+    const refreshToken = await signToken(userExist, "refresh");
+    const accessToken = await signToken(userExist, "access");
 
     const result = await prismaClient.token.create({
         data: {
@@ -101,13 +103,39 @@ const refresh = async (refreshToken) => {
     if (!tokenExist) {
         throw new ResponseError(401, "Refresh token is not valid")
     }
-    const newAccessToken = await refreshAccessToken(refreshToken);
+    // const newAccessToken = await refreshAccessToken(refreshToken);
+
+    const newAccessToken = await signToken(verifyToken(refreshToken), "access");
 
     return [tokenExist, newAccessToken];
-}
+};
+
+const logout = async (refreshToken, accessToken) => {
+    let isValidAccessToken = false;
+    let isValidRefreshToken = false;
+    
+    try {
+        isValidAccessToken = accessToken ? await verifyToken(accessToken) : false;
+    } catch {
+        isValidAccessToken = false;
+    }
+
+    try {
+        isValidRefreshToken = refreshToken ? await verifyToken(refreshToken) : false;
+    } catch {
+        isValidRefreshToken = false;
+    }
+
+    if (!isValidAccessToken && !isValidRefreshToken) {
+        throw new ResponseError(401, "Unauthorized");
+    } else {
+        return true;
+    }
+};
 
 export default {
     register,
     login,
-    refresh
+    refresh,
+    logout
 }

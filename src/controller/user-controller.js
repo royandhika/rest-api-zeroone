@@ -29,7 +29,7 @@ const login = async (req, res, next) => {
     } catch (e) {
         next(e);
     }
-}
+};
 
 const refresh = async (req, res, next) => {
     try {
@@ -42,10 +42,27 @@ const refresh = async (req, res, next) => {
     } catch (e) {
         next(e);
     }
-}
+};
+
+const logout = async (req, res, next) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        const accessToken = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+
+        await userService.logout(refreshToken, accessToken);
+        
+        res.clearCookie('refreshToken');
+        res.status(200).json({
+            message: "Logout success"
+        });
+    } catch (e) {
+        next(e);
+    }
+};
 
 export default {
     register,
     login,
-    refresh
+    refresh,
+    logout
 };

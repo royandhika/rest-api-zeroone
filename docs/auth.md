@@ -6,25 +6,18 @@
 http://masih-di-localhost.com
 ```
 
-<!-- ## Authentication
-
-```
-Authorization: Bearer <token>
-``` -->
-
 ## Endpoints
 ### **1. Register User**
 
-- **Endpoint** :
+- **Endpoint** 
     ```
     POST /api/auth/register
     ``` 
 
-- **Description** :
-    
+- **Description**   
     Mendaftarkan username baru ke sistem
 
-- **Request Body** :
+- **Request Body** 
     ```json
     {
         "username": "string",
@@ -33,8 +26,8 @@ Authorization: Bearer <token>
     }
     ```
 
-- **Response** :
-    - Success **(200 OK)** :
+- **Response** 
+    - Success **(200 OK)** 
         ```json
         {
             "data": {
@@ -43,7 +36,8 @@ Authorization: Bearer <token>
             }
         }
         ```
-    - Error **(400 Bad Request)** : 
+
+    - Error **(400 Bad Request)**  
         ```json
         {
             "error": "Username already exist",
@@ -57,16 +51,15 @@ Authorization: Bearer <token>
 
 ### **2. Login User**
 
-- **Endpoint** :
+- **Endpoint** 
     ```
     POST /api/auth/login
     ``` 
 
-- **Description** :
-
+- **Description**   
     Login dengan username dan password
 
-- **Request Body** : 
+- **Request Body**  
     ```json
     {
         "username": "string",
@@ -74,8 +67,8 @@ Authorization: Bearer <token>
     }
     ```
 
-- **Response** :
-    - Success **(200 OK)** :
+- **Response** 
+    - Success **(200 OK)** 
         ```json
         {
             "data": {
@@ -84,8 +77,8 @@ Authorization: Bearer <token>
             "accessToken": "string"
         }
         ```
-
-    - Error **(401 Unauthorized)** :
+    
+    - Error **(401 Unauthorized)** 
         ```json
         {
             "error": "Username or password wrong"
@@ -94,32 +87,29 @@ Authorization: Bearer <token>
 
 ### **3. Refresh Token**
 
-- **Endpoint** :
+- **Endpoint** 
     ```
     POST /api/auth/refresh
     ``` 
 
-- **Description** :
-
+- **Description**   
     Pembaharuan access token
 
-- **Cookies** : 
-    
-    **refreshToken:** dibutuhkan untuk refresh access token (string) 
+- **Cookies**    
+    **refreshToken :** dibutuhkan untuk refresh access token (string) 
 
-
-- **Response** :
-    - Success **(200 OK)** :
+- **Response** 
+    - Success **(200 OK)** 
         ```json
         {
-            "data": {
+            "data" {
                 "username": "string"
             },
             "accessToken": "string"
         }
         ```
 
-    - Error **(401 Unauthorized)** :
+    - Error **(401 Unauthorized)** 
         ```json
         {
             "error": "Refresh token is not valid"
@@ -128,22 +118,31 @@ Authorization: Bearer <token>
 
 ### **4. Logout User**
 
-- **Endpoint** :
+- **Endpoint** 
     ```
     POST /api/auth/logout
     ```
 
-- **Description** :
-
+- **Description**   
     Logout user dari sistem
 
-- **Request Body** :
-    ```json
-    {
+- **Cookies**   
+    **refreshToken :** dibutuhkan untuk logout (string) 
 
-    }
-    ```
+- **Authorization**   
+    **accessToken :** dibutuhkan untuk logout (string)
 
-- **Response** :
-    - Success **(200 OK)** :
-    - Error **(401 Unauthorized)** :
+- **Response** 
+    - Success **(200 OK)** 
+        ```json
+        {
+            "message": "Logout success" 
+        }
+        ```
+    
+    - Error **(401 Unauthorized)** 
+        ```json
+        {
+            "error": "Unauthorized"
+        }
+        ```

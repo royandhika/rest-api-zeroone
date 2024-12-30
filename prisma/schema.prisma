@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id String @id @unique @db.VarChar(36)
+  username String @unique @db.VarChar(20)
+  password String @db.VarChar(200)
+  email String @unique @db.VarChar(30)
+  updated_at DateTime @default(now()) 
+
+  profile Profile?
+  token Token[]
+  // tokenById Token[] @relation(name: "UserById")
+  // tokenByUsername Token[] @relation(name: "UserByUsername")
+  order Order[]
+
+  @@map("users")
+}
+
+model Profile {
+  id Int @id @default(autoincrement())
+  user_id String @unique @db.VarChar(36)
+  fullname String @db.VarChar(50)
+  phone String? @db.VarChar(20)
+  city String? @db.VarChar(30)
+  region String @db.VarChar(50)
+  updated_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+  
+  @@map("profiles")
+}
+
+model Token {
+  id Int @id @default(autoincrement())
+  user_id String @db.VarChar(36)
+  username String @db.VarChar(20)
+  refresh_token String @db.VarChar(250)
+  expired_at DateTime
+
+  user User @relation(fields: [user_id], references: [id])
+  // userById User @relation(name: "UserById", fields: [user_id], references: [id])
+  // userByUsername User @relation(name: "UserByUsername", fields: [username], references: [username])
+  
+  @@map("tokens")
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  product_name String @db.VarChar(100)
+  price BigInt 
+  updated_at DateTime @default(now())
+
+  order Order[]
+
+  @@map("products")
+} 
+
+model Order {
+  id Int @id @default(autoincrement())
+  user_id String @db.VarChar(36)
+  product_id Int
+  qty Int
+  total_price BigInt
+
+  user User @relation(fields: [user_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("orders")
+}

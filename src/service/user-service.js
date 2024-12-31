@@ -6,23 +6,23 @@ import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid"
 
 const register = async (request) => {
-    const user = validate(registerUserValidation, request);
+    const registerRequest = validate(registerUserValidation, request);
 
-    user.password = await bcrypt.hash(user.password, 10);
+    registerRequest.password = await bcrypt.hash(registerRequest.password, 10);
 
     const countUser = await prismaClient.user.count({
         where: {
-            username: user.username
+            username: registerRequest.username
         }
     });
     const countEmail = await prismaClient.user.count({
         where: {
-            email: user.email
+            email: registerRequest.email
         }
     });
 
     const id = uuid().toString();
-    user.id = id;
+    registerRequest.id = id;
 
     if (countUser != 0) {
         throw new ResponseError(400, "Username already exist");
@@ -30,7 +30,7 @@ const register = async (request) => {
         throw new ResponseError(400, "Account with the same email already registered");
     } else {
         return prismaClient.user.create({
-            data: user,
+            data: registerRequest,
             select: {
                 id: true,
                 username: true,
@@ -42,10 +42,10 @@ const register = async (request) => {
 
 
 const login = async (request) => {
-    const userLogin = validate(loginUserValidation, request);
+    const loginRequest = validate(loginUserValidation, request);
     const userExist = await prismaClient.user.findUnique({
         where: {
-            username: userLogin.username
+            username: loginRequest.username
         },
         select: {
             id: true,
@@ -57,12 +57,11 @@ const login = async (request) => {
         throw new ResponseError(401, "Username or password wrong")
     }
 
-    const isValidPassword = await bcrypt.compare(userLogin.password, userExist.password);
+    const isValidPassword = await bcrypt.compare(loginRequest.password, userExist.password);
     if (!isValidPassword) {
         throw new ResponseError(401, "Username or password wrong")
     };
     
-    // const [refreshToken, accessToken] = await getToken(userExist);
     const refreshToken = await signToken(userExist, "refresh");
     const accessToken = await signToken(userExist, "access");
 
@@ -71,24 +70,30 @@ const login = async (request) => {
             user_id: userExist.id,
             username: userExist.username,
             refresh_token: refreshToken,
-            expired_at: new Date(Date.now() + (8 * 60 * 60 * 1000)),
+            expired_at: new Date(Date.now() + (31 * 60 * 60 * 1000)), // 24 jam dari sekarang
         }, 
         select: {
             username: true,
         }
     });
 
-    return [result, refreshToken, accessToken];
+    result.access_token = accessToken;
+
+    return [result, refreshToken];
 }
 
 
-const refresh = async (refreshToken) => {
-    if (!refreshToken) {
-        throw new ResponseError(401, "Refresh token is not valid")
-    }
-    const tokenExist = await prismaClient.token.findFirst({
+const refresh = async (request) => {
+    const user = await verifyToken(request);
+    if (!user) {
+        throw new ResponseError(401, "Unauthorized");
+    };
+
+    const newAccessToken = await signToken(user, "access");
+
+    const result = await prismaClient.token.findFirst({
         where: {
-            refresh_token: refreshToken,
+            refresh_token: request,
             expired_at: {
                 gt: new Date(Date.now() + (7 * 60 * 60 * 1000)),
             },
@@ -100,42 +105,53 @@ const refresh = async (refreshToken) => {
         }
     });
 
-    if (!tokenExist) {
-        throw new ResponseError(401, "Refresh token is not valid")
-    }
-    // const newAccessToken = await refreshAccessToken(refreshToken);
-
-    const newAccessToken = await signToken(verifyToken(refreshToken), "access");
-
-    return [tokenExist, newAccessToken];
-};
-
-const logout = async (refreshToken, accessToken) => {
-    let isValidAccessToken = false;
-    let isValidRefreshToken = false;
-    
-    try {
-        isValidAccessToken = accessToken ? await verifyToken(accessToken) : false;
-    } catch {
-        isValidAccessToken = false;
-    }
-
-    try {
-        isValidRefreshToken = refreshToken ? await verifyToken(refreshToken) : false;
-    } catch {
-        isValidRefreshToken = false;
-    }
-
-    if (!isValidAccessToken && !isValidRefreshToken) {
+    if (!result) {
         throw new ResponseError(401, "Unauthorized");
-    } else {
-        return true;
-    }
+    };
+    
+    result.access_token = newAccessToken;
+    return result;
 };
+
+
+const logout = async (request) => {
+    const user = await verifyToken(request);
+    if (!user) {
+        throw new ResponseError(401, "Unauthorized")
+    }
+
+    const result = await prismaClient.token.deleteMany({
+        where: {
+            username: user.username
+        }
+    });
+
+    return result;
+}
+
+const get = async (request) => {
+    const user = await prismaClient.user.findUnique({
+        where: {
+            username: request.username
+        },
+        select: {
+            id: true,
+            username: true,
+            email: true
+        }
+    });
+
+    if (!user) {
+        throw new ResponseError(404, "User not found");
+    } 
+
+    return user;
+}
 
 export default {
     register,
     login,
     refresh,
-    logout
+    logout,
+    get
 }

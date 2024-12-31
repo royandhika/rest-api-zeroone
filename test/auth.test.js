@@ -138,7 +138,7 @@ describe("Test API Register", function () {
             .post("/api/auth/refresh")
             .set("Cookie", refreshToken);
         expect(response.status).toBe(200);
-        expect(response.body.accessToken).toBeDefined();
+        expect(response.body.data.access_token).toBeDefined();
     });
     
     
@@ -158,7 +158,7 @@ describe("Test API Register", function () {
             .map(cookie => cookie.split(';')) 
             .flat() 
             .find(cookie => cookie.trim().startsWith('refreshToken=')) 
-        const accessToken = `Bearer ${response.body.data.accessToken}`
+        const accessToken = `Bearer ${response.body.data.access_token}`
         
         response = await supertest(web)
             .post("/api/auth/logout")

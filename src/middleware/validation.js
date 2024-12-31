@@ -14,39 +14,10 @@ const validate = (schema, request) => {
     }
 };
 
-const getToken = async (user) => {
-    const refreshToken = jwt.sign(
-        {id: user.id, username: user.username}, 
-        jwtKey,
-        {expiresIn: "1m",} // Expired 1 menit di jwt
-    ); 
-    
-    const accessToken = jwt.sign(
-        {id: user.id, username: user.username}, 
-        jwtKey,
-        {expiresIn: "1h",} // Expired 1 jam di jwt
-    ); 
-    
-    return [refreshToken, accessToken]
-}
-
-const refreshAccessToken = async (token) => {
-    const user = jwt.verify(token, jwtKey);
-
-    const newAccessToken = jwt.sign(
-        {id: user.id, username: user.username}, 
-        jwtKey,
-        {expiresIn: "1m",} // Expired 1 menit di jwt
-    ); 
-
-    return newAccessToken;
-}
-
 const signToken = async (user, type) => {
-    const expiresIn = type === "refresh" ? "1h"
-        : type === "access" ? "1m"
+    const expiresIn = type === "refresh" ? "1d"
+        : type === "access" ? "15m"
         : undefined;
-
 
     const token = jwt.sign(
         {id: user.id, username: user.username},
@@ -58,15 +29,27 @@ const signToken = async (user, type) => {
 }
 
 const verifyToken = async (token) => {
-    const user = jwt.verify(token, jwtKey);
+    try {
+        const user = jwt.verify(token, jwtKey);
+        return user;
+    } catch {
+        const user = undefined;
+        return user;
+    }
+    // return new Promise((resolve, reject) => {
+    //     jwt.verify(token, jwtKey, (err, decoded) => {
+    //         if (err) {
+    //             reject(err);
+    //         } else {
+    //             resolve(decoded);
+    //         }
+    //     });
+    //   });
+};
 
-    return user;
-}
 
 export {
     validate,
-    // getToken,
-    // refreshAccessToken,
     signToken,
     verifyToken,
 };

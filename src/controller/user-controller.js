@@ -2,6 +2,7 @@ import userService from "../service/user-service.js";
 
 const register = async (req, res, next) => {
     try {
+        // Lempar body ke service
         const result = await userService.register(req.body);
 
         res.status(200).json({
@@ -14,6 +15,9 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     try {
+        req.body.userAgent = req.headers['user-agent'];
+        req.body.ipAddress = req.ip;
+        // Lempar body ke service (+ useragent & ip)
         const [result, refreshToken] = await userService.login(req.body);
 
         res.cookie('refreshToken', refreshToken, {
@@ -34,7 +38,8 @@ const login = async (req, res, next) => {
 
 const refresh = async (req, res, next) => {
     try {
-        const result = await userService.refresh(req.cookies.refreshToken);
+        // Lempar cookies ke service
+        const result = await userService.refresh(req.cookies);
         
         res.status(200).json({
             data: result
@@ -44,17 +49,24 @@ const refresh = async (req, res, next) => {
     }
 };
 
+
+
+// ------------------ PRIVATE ------------------
+// Private berarti melewati auth-middleware, 
+// berarti req.body PASTI punya user_id dan username 
+
 const logout = async (req, res, next) => {
     try {
-        const result = await userService.logout(req.cookies.refreshToken);
+        // Lempar body ke service
+        const result = await userService.logout(req.body);
         
         // Hapus cookies
         res.clearCookie('refreshToken');
         // Hapus session storage
-        // clear session storage di frontend
+        // DARI SISI FRONTEND
 
         res.status(200).json({
-            data: result,
+            // data: result,
             message: "Logout success"
         });
     } catch (e) {
@@ -64,6 +76,7 @@ const logout = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
+        // Lempar body ke service
         const result = await userService.get(req.body)
 
         res.status(200).json({

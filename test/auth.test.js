@@ -10,6 +10,11 @@ describe("Test API Register", function () {
                 username: "royandhk"
             }
         });
+        await prismaClient.profile.deleteMany({
+            where: {
+                username: "royandhk"
+            }
+        });
         await prismaClient.user.deleteMany({
             where: {
                 username: "royandhk"
@@ -24,8 +29,9 @@ describe("Test API Register", function () {
             .post("/api/auth/register")
             .send({
                 username: "royandhk",
-                password: "sungaK22x",
+                password: "sungaK22!x",
                 email: "satriaroy70@gmail.com",
+                phone: "085921756700"
             });
         expect(response.status).toBe(200);
         expect(response.body.data.username).toBe("royandhk");
@@ -55,7 +61,7 @@ describe("Test API Register", function () {
             .post("/api/auth/register")
             .send({
                 username: "royandhk",
-                password: "sungaK22x",
+                password: "sungaK22!x",
                 email: "satriaroy75@gmail.com",
             });
         expect(response.status).toBe(400);
@@ -69,7 +75,7 @@ describe("Test API Register", function () {
             .post("/api/auth/register")
             .send({
                 username: "royandhiko",
-                password: "sungaK22x",
+                password: "sungaK22!x",
                 email: "satriaroy70@gmail.com",
             });
         expect(response.status).toBe(400);
@@ -83,7 +89,7 @@ describe("Test API Register", function () {
             .post("/api/auth/login")
             .send({
                 username: "royandhk",
-                password: "sungaK22x",
+                password: "sungaK22!x",
             });
         expect(response.status).toBe(200);
         expect(response.body.data.username).toBe("royandhk");
@@ -97,7 +103,7 @@ describe("Test API Register", function () {
             .post("/api/auth/login")
             .send({
                 username: "royandhk",
-                password: "testwrong1",
+                password: "testWrong-1",
             });
         expect(response.status).toBe(401);
         expect(response.body.errors).toBeDefined();
@@ -110,7 +116,7 @@ describe("Test API Register", function () {
             .post("/api/auth/login")
             .send({
                 username: "royandhiko",
-                password: "sungaK22x",
+                password: "sungaK22!x",
             });
         expect(response.status).toBe(401);
         expect(response.body.errors).toBeDefined();
@@ -123,7 +129,7 @@ describe("Test API Register", function () {
             .post("/api/auth/login")
             .send({
                 username: "royandhk",
-                password: "sungaK22x",
+                password: "sungaK22!x",
             });
         expect(response.status).toBe(200);
         expect(response.body.data.username).toBe("royandhk");
@@ -148,7 +154,7 @@ describe("Test API Register", function () {
             .post("/api/auth/login")
             .send({
                 username: "royandhk",
-                password: "sungaK22x",
+                password: "sungaK22!x",
             });
         expect(response.status).toBe(200);
         expect(response.body.data.username).toBe("royandhk");

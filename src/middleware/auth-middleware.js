@@ -1,4 +1,4 @@
-import { verifyToken } from "./validation.js";
+import { verifyToken } from "../validation/validation.js";
 
 const authMiddleware = async (req, res, next) => {
     const accessToken = req.headers['authorization']?.split(' ')[1];
@@ -9,6 +9,7 @@ const authMiddleware = async (req, res, next) => {
             errors: "Unauthorized"
         }).end();
     } else {
+        req.body.user_id = isValidAccessToken.id,
         req.body.username = isValidAccessToken.username;
         next();
     }

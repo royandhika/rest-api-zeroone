@@ -10,19 +10,17 @@ http://masih-di-localhost.com
 ### **1. Register User**
 
 - **Endpoint** 
-    ```
-    POST /api/auth/register
+    ```js
+    POST /api/users
     ``` 
-
-- **Description**   
-    Mendaftarkan username baru ke sistem
 
 - **Request Body** 
     ```json
     {
         "username": "string",
         "email": "string",
-        "password": "string"
+        "password": "string",
+        "phone": "string" // optional
     }
     ```
 
@@ -40,24 +38,20 @@ http://masih-di-localhost.com
     - Error **(400 Bad Request)**  
         ```json
         {
-            "error": "Username already exist",
-        }
-        ```
-        ```json
-        {
-            "error": "Account with the same email already registered"
+            "errors": "Username or email already exist",
         }
         ```
 
 ### **2. Login User**
 
 - **Endpoint** 
-    ```
-    POST /api/auth/login
+    ```js
+    POST /api/sessions
     ``` 
 
-- **Description**   
-    Login dengan username dan password
+- **Request Header**
+    - **user-agent**  
+    - **ip-address**
 
 - **Request Body**  
     ```json
@@ -72,65 +66,58 @@ http://masih-di-localhost.com
         ```json
         {
             "data": {
-                "username": "string"
-            },
-            "accessToken": "string"
+                "user_id": "string",
+                "accessToken": "string"
+            }
         }
         ```
     
     - Error **(401 Unauthorized)** 
         ```json
         {
-            "error": "Username or password wrong"
+            "errors": "Username or password wrong"
         }
         ```
 
 ### **3. Refresh Token**
 
 - **Endpoint** 
-    ```
-    POST /api/auth/refresh
+    ```js
+    POST /api/sessions/refresh
     ``` 
 
-- **Description**   
-    Pembaharuan access token
-
 - **Cookies**    
-    **refreshToken :** dibutuhkan untuk refresh access token (string) 
+    - **refreshToken**
 
 - **Response** 
     - Success **(200 OK)** 
         ```json
         {
-            "data" {
-                "username": "string"
-            },
-            "accessToken": "string"
+            "data": {
+                "user_id": "string",
+                "accessToken": "string"
+            }
         }
         ```
 
     - Error **(401 Unauthorized)** 
         ```json
         {
-            "error": "Refresh token is not valid"
+            "errors": "Unauthorized"
         }
         ```
 
 ### **4. Logout User**
 
 - **Endpoint** 
+    ```js
+    DELETE /api/sessions
     ```
-    POST /api/auth/logout
+
+- **Authorization**  
     ```
-
-- **Description**   
-    Logout user dari sistem
-
-- **Cookies**   
-    **refreshToken :** dibutuhkan untuk logout (string) 
-
-- **Authorization**   
-    **accessToken :** dibutuhkan untuk logout (string)
+    Bearer <accessToken>
+    ```
 
 - **Response** 
     - Success **(200 OK)** 
@@ -143,6 +130,37 @@ http://masih-di-localhost.com
     - Error **(401 Unauthorized)** 
         ```json
         {
-            "error": "Unauthorized"
+            "errors": "Unauthorized"
+        }
+        ```
+
+### **5. Get User**
+
+- **Endpoint**
+    ```js
+    GET /api/users/:userId
+    ```
+
+- **Authorization**  
+    ```
+    Bearer <accessToken>
+    ```
+
+- **Response** 
+    - Success **(200 OK)** 
+        ```json
+        {
+            "data": {
+                "id": "string",
+                "username": "string",
+                "email": "string"
+            }
+        }
+        ```
+    
+    - Error **(401 Unauthorized)** 
+        ```json
+        {
+            "errors": "Unauthorized"
         }
         ```
